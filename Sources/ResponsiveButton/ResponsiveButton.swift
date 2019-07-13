@@ -138,12 +138,16 @@ private extension ResponsiveButton {
             ButtonState.allCases.forEach {
                 backupTitleColor(titleColor(for: $0.correspondControlState),
                                  for: $0.correspondControlState)
+            }
+            ButtonState.allCases.forEach {
                 setTitleColorWithoutBackup(.clear, for: $0.correspondControlState)
             }
         } else {
             ButtonState.allCases.forEach {
-                setTitleColorWithoutBackup(
-                    titleColorBackupForState[$0] ?? tintColor, for: $0.correspondControlState)
+                if let titleColorBackup = titleColorBackupForState[$0] {
+                    setTitleColorWithoutBackup(
+                        titleColorBackup, for: $0.correspondControlState)
+                }
             }
         }
     }
@@ -154,8 +158,24 @@ private extension ResponsiveButton {
             backgroundColor = .clear
             /// Prevent backgroundColorBackup from being clear:
             backgroundColorBackup = originalBackgroundColor
+            ButtonState.allCases.forEach {
+                backupBackgroundImage(
+                    backgroundImage(for: $0.correspondControlState), for: $0.correspondControlState)
+            }
+            
+            ButtonState.allCases.forEach {
+                setBackgroundImageWithoutBackup(nil, for: $0.correspondControlState)
+            }
         } else {
-            backgroundColor = originalBackgroundColor
+            if let originalBackgroundColor = originalBackgroundColor {
+                backgroundColor = originalBackgroundColor
+            }
+            
+            ButtonState.allCases.forEach {
+                if let backgroundImageBackup = backgroundImageBackupForState[$0] {
+                    setBackgroundImage(backgroundImageBackup, for: $0.correspondControlState)
+                }
+            }
         }
     }
     
