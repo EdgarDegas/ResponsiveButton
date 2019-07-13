@@ -17,13 +17,16 @@ open class ResponsiveButton: UIButton {
     /// Determine whether the activity indicator is shown or not.
     ///
     /// If true, the button disappears and the indicator is shown.
-    public var isBusy: Bool = false {
-        didSet {
-            if oldValue == true {
-                hideActivityIndicator()
-            } else {
-                showActivityIndicator()
-            }
+    var isBusy: Bool = false
+    
+    public var alwaysKeepBackground: Bool = false
+    
+    public func setBusy(_ busy: Bool, hideBackground: Bool = true) {
+        isBusy = busy
+        if busy {
+            showActivityIndicator(hideBackground: hideBackground)
+        } else {
+            hideActivityIndicator()
         }
     }
     
@@ -86,15 +89,13 @@ open class ResponsiveButton: UIButton {
 
 public extension ResponsiveButton {
     /// Hide the button content and show the activity indicator.
-    func showActivityIndicator() {
+    func showActivityIndicator(hideBackground: Bool = true) {
+        activityIndicator.color = tintColor
         activityIndicator.startAnimating()
         toggleTitleHiddenState(true)
         toggleImageHiddenState(true)
-        toggleBackgroundHiddenState(true)
-        ButtonState.allCases.forEach {
-            backupBackgroundImage(
-                backgroundImage(for: $0.correspondControlState), for: $0.correspondControlState)
-            setBackgroundImageWithoutBackup(nil, for: $0.correspondControlState)
+        if alwaysKeepBackground == false && hideBackground {
+            toggleBackgroundHiddenState(true)
         }
     }
     
@@ -104,9 +105,6 @@ public extension ResponsiveButton {
         toggleTitleHiddenState(false)
         toggleImageHiddenState(false)
         toggleBackgroundHiddenState(false)
-        ButtonState.allCases.forEach {
-            setBackgroundImage(backgroundImageBackupForState[$0] ?? nil, for: $0.correspondControlState)
-        }
     }
 }
 
@@ -115,13 +113,14 @@ private extension ResponsiveButton {
     func setupInterface() {
         let activityIndicator = UIActivityIndicatorView(style: .gray)
         activityIndicator.hidesWhenStopped = true
-        addSubview(activityIndicator)
         
+        addSubview(activityIndicator)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor)
             .isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor)
             .isActive = true
+        
         self.activityIndicator = activityIndicator
     }
     
@@ -141,12 +140,16 @@ private extension ResponsiveButton {
             ButtonState.allCases.forEach {
                 backupTitleColor(titleColor(for: $0.correspondControlState),
                                  for: $0.correspondControlState)
+            }
+            ButtonState.allCases.forEach {
                 setTitleColorWithoutBackup(.clear, for: $0.correspondControlState)
             }
         } else {
             ButtonState.allCases.forEach {
-                setTitleColorWithoutBackup(
-                    titleColorBackupForState[$0] ?? tintColor, for: $0.correspondControlState)
+                if let titleColorBackup = titleColorBackupForState[$0] {
+                    setTitleColorWithoutBackup(
+                        titleColorBackup, for: $0.correspondControlState)
+                }
             }
         }
     }
@@ -157,8 +160,24 @@ private extension ResponsiveButton {
             backgroundColor = .clear
             /// Prevent backgroundColorBackup from being clear:
             backgroundColorBackup = originalBackgroundColor
+            ButtonState.allCases.forEach {
+                backupBackgroundImage(
+                    backgroundImage(for: $0.correspondControlState), for: $0.correspondControlState)
+            }
+            
+            ButtonState.allCases.forEach {
+                setBackgroundImageWithoutBackup(nil, for: $0.correspondControlState)
+            }
         } else {
-            backgroundColor = originalBackgroundColor
+            if let originalBackgroundColor = originalBackgroundColor {
+                backgroundColor = originalBackgroundColor
+            }
+            
+            ButtonState.allCases.forEach {
+                if let backgroundImageBackup = backgroundImageBackupForState[$0] {
+                    setBackgroundImage(backgroundImageBackup, for: $0.correspondControlState)
+                }
+            }
         }
     }
     
