@@ -17,13 +17,16 @@ open class ResponsiveButton: UIButton {
     /// Determine whether the activity indicator is shown or not.
     ///
     /// If true, the button disappears and the indicator is shown.
-    public var isBusy: Bool = false {
-        didSet {
-            if oldValue == true {
-                hideActivityIndicator()
-            } else {
-                showActivityIndicator()
-            }
+    var isBusy: Bool = false
+    
+    public var alwaysKeepBackground: Bool = false
+    
+    public func setBusy(_ busy: Bool, hideBackground: Bool = true) {
+        isBusy = busy
+        if busy {
+            showActivityIndicator(hideBackground: hideBackground)
+        } else {
+            hideActivityIndicator()
         }
     }
     
@@ -86,15 +89,12 @@ open class ResponsiveButton: UIButton {
 
 public extension ResponsiveButton {
     /// Hide the button content and show the activity indicator.
-    func showActivityIndicator() {
+    func showActivityIndicator(hideBackground: Bool = true) {
         activityIndicator.startAnimating()
         toggleTitleHiddenState(true)
         toggleImageHiddenState(true)
-        toggleBackgroundHiddenState(true)
-        ButtonState.allCases.forEach {
-            backupBackgroundImage(
-                backgroundImage(for: $0.correspondControlState), for: $0.correspondControlState)
-            setBackgroundImageWithoutBackup(nil, for: $0.correspondControlState)
+        if alwaysKeepBackground == false && hideBackground {
+            toggleBackgroundHiddenState(true)
         }
     }
     
@@ -104,9 +104,6 @@ public extension ResponsiveButton {
         toggleTitleHiddenState(false)
         toggleImageHiddenState(false)
         toggleBackgroundHiddenState(false)
-        ButtonState.allCases.forEach {
-            setBackgroundImage(backgroundImageBackupForState[$0] ?? nil, for: $0.correspondControlState)
-        }
     }
 }
 
