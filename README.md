@@ -1,3 +1,3 @@
 # ResponsiveButton
 
-A description of this package.
+A UIButton subclass that can become a spinner.
