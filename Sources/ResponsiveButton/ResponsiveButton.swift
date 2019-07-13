@@ -90,6 +90,7 @@ open class ResponsiveButton: UIButton {
 public extension ResponsiveButton {
     /// Hide the button content and show the activity indicator.
     func showActivityIndicator(hideBackground: Bool = true) {
+        activityIndicator.color = tintColor
         activityIndicator.startAnimating()
         toggleTitleHiddenState(true)
         toggleImageHiddenState(true)
@@ -112,13 +113,14 @@ private extension ResponsiveButton {
     func setupInterface() {
         let activityIndicator = UIActivityIndicatorView(style: .gray)
         activityIndicator.hidesWhenStopped = true
-        addSubview(activityIndicator)
         
+        addSubview(activityIndicator)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor)
             .isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor)
             .isActive = true
+        
         self.activityIndicator = activityIndicator
     }
     
